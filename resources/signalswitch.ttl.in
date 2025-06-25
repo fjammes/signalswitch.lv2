@@ -1,0 +1,83 @@
+@prefix atom:  <http://lv2plug.in/ns/ext/atom#>.
+@prefix doap:  <http://usefulinc.com/ns/doap#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix lv2:   <http://lv2plug.in/ns/lv2core#>.
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix ui:    <http://lv2plug.in/ns/extensions/ui#>.
+@prefix units: <http://lv2plug.in/ns/extensions/units#>.
+@prefix urid:  <http://lv2plug.in/ns/ext/urid#>.
+@prefix opts:  <http://lv2plug.in/ns/ext/options#> .
+@prefix param: <http://lv2plug.in/ns/ext/parameters#>.
+@prefix patch: <http://lv2plug.in/ns/ext/patch#>.
+@prefix state: <http://lv2plug.in/ns/ext/state#>.
+@prefix work:  <http://lv2plug.in/ns/ext/worker#>.
+@prefix mod: <http://moddevices.com/ns/mod#>.
+
+<@NAM_LV2_ID@#model>
+	a lv2:Parameter;
+	mod:fileTypes "";
+	rdfs:label "Signal Switch";
+	rdfs:range atom:Path.
+
+<@NAM_LV2_ID@>
+	a lv2:Plugin, lv2:SimulatorPlugin, doap:Project;
+	doap:name "Signal Switch";
+	lv2:project <@NAM_LV2_ID@>;
+	lv2:minorVersion @PROJECT_VERSION_MINOR@;
+	lv2:microVersion @PROJECT_VERSION_PATCH@;
+	doap:license <http://opensource.org/licenses/gpl-3-0>;
+
+	doap:maintainer [
+		foaf:name "Fabrice Jammes";
+		foaf:homepage <http://github.com/fjammes>;
+	];
+
+	lv2:requiredFeature urid:map, work:schedule;
+	lv2:optionalFeature lv2:hardRTCapable, opts:options, state:threadSafeRestore;
+	lv2:extensionData work:interface, state:interface, opts:interface;
+	opts:supportedOption <http://lv2plug.in/ns/ext/buf-size#maxBlockLength>;
+
+	rdfs:comment """
+LV2 plugin for neural network machine learning guitar amplifier simulation models
+
+Models supported:
+  Neural Amp Modeler (NAM): https://github.com/sdatkinson/neural-amp-modeler
+  RTNeural keras/Aida-x models: https://github.com/jatinchowdhury18/RTNeural
+
+A large collection of models is available at https://tonehunt.org
+""";
+
+	# Control
+	lv2:port [
+        a lv2:AudioPort , lv2:InputPort ;
+        lv2:index 0 ;
+        lv2:symbol "input" ;
+        rdfs:label "Audio Input"
+    ] ,
+    [
+        a atom:AtomPort , lv2:InputPort ;
+        atom:bufferType atom:Sequence ;
+        atom:supports midi:MidiEvent ;
+        lv2:index 1 ;
+        lv2:symbol "midi_in" ;
+        rdfs:label "MIDI Input"
+    ] ,
+    [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 2 ;
+        lv2:symbol "cc_number" ;
+        rdfs:label "MIDI CC Number" ;
+        lv2:default 20 ;
+        lv2:minimum 0 ;
+        lv2:maximum 127
+    ] ,
+    [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 3 ;
+        lv2:symbol "midi_channel" ;
+        rdfs:label "MIDI Channel" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 15
+    ].
