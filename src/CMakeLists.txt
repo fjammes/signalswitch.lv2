@@ -35,18 +35,10 @@ add_library(signalswitch SHARED ${SOURCES})
 
 target_include_directories(signalswitch PUBLIC ../deps/lv2/include)
 
-target_link_libraries(neural_amp_modeler PRIVATE NeuralAudio)
-
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
 source_group(NAM ${CMAKE_CURRENT_SOURCE_DIR} FILES ${NA_SOURCES})
 
-option(DISABLE_DENORMALS "Disable floating point denormals" ON)
-
-if (DISABLE_DENORMALS)
-	add_definitions(-DDISABLE_DENORMALS)
-endif (DISABLE_DENORMALS)
-
-set_target_properties(neural_amp_modeler
+set_target_properties(signalswitch
 	PROPERTIES
 	CXX_VISIBILITY_PRESET hidden
 	INTERPROCEDURAL_OPTIMIZATION TRUE
@@ -56,5 +48,5 @@ set_target_properties(neural_amp_modeler
 # Platform
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	target_compile_definitions(neural_amp_modeler PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
+	target_compile_definitions(signalswitch PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
 endif()
