@@ -7,12 +7,12 @@
 #include <lv2/atom/atom.h>
 #include <lv2/atom/util.h>
 #include <lv2/midi/midi.h>
+#include <lv2/urid/urid.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #define MAX_OUTPUTS 8
-#define MIDI_EVENT_TYPE 0x80
 #ifndef NUM_OUTPUTS
 #define NUM_OUTPUTS 4
 #endif
@@ -25,6 +25,8 @@ typedef struct {
     const LV2_Atom_Sequence* midi_in;
     const float* cc_number_param;
     const float* midi_channel_param;
+    LV2_URID_Map* map;
+    LV2_URID midi_event;
     int current_output;
 } SignalSwitch;
 
@@ -32,6 +34,17 @@ static LV2_Handle
 instantiate(const LV2_Descriptor* descriptor, double rate,
             const char* bundle_path, const LV2_Feature* const* features) {
     SignalSwitch* self = (SignalSwitch*)calloc(1, sizeof(SignalSwitch));
+    self->map = NULL;
+    for (int i = 0; features && features[i]; ++i) {
+        if (!strcmp(features[i]->URI, LV2_URID__map)) {
+            self->map = (LV2_URID_Map*)features[i]->data;
+        }
+    }
+    if (!self->map) {
+        free(self);
+        return NULL;
+    }
+    self->midi_event = self->map->map(self->map->handle, LV2_MIDI__MidiEvent);
     self->current_output = 0;
     return (LV2_Handle)self;
 }
@@ -64,7 +77,7 @@ static void run(LV2_Handle instance, uint32_t n_samples) {
 
     // Parse MIDI
     LV2_ATOM_SEQUENCE_FOREACH(self->midi_in, ev) {
-        if (ev->body.type == self->midi_in->atom.type && ev->body.type == MIDI_EVENT_TYPE) {
+        if (ev->body.type == self->midi_event) {
             const uint8_t* msg = (const uint8_t*)(ev + 1);
             if ((msg[0] & 0xF0) == 0xB0) {
                 int channel = msg[0] & 0x0F;
